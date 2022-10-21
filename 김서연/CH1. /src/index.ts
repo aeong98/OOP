@@ -125,7 +125,7 @@ function Theater(this:any, ticketSeller: TicketSeller){
     }
 }
 
-
+// TODO: 아니 함수 생성자 타입스크립트 안되는 거 실화? 대상에 구문 시그니처가 없는 'new' 식에는 암시적으로 'any' 형식이 포함됩니다.ts(7009) <- 이거 해결 어떻게
 const invitation = new (Invitation as any)(new Date());
 const ticket = new (Ticket as any)(2000);
 const bag = new (Bag as any)(10000, invitation, ticket);
