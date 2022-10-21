@@ -19,7 +19,6 @@ function Ticket(this:Ticket, fee:number){
     }
 }
 
-
 interface Bag {
     amount: number;
     invitation : Invitation;
@@ -38,7 +37,7 @@ function Bag(this:Bag, amount:number, invitation:Invitation,  ticket:Ticket){
     this.ticket=ticket;
 
     this.hold=(ticket:Ticket)=>{
-        if(this.hasInvitation()){
+        if(!this.hasInvitation()){
             this.setTicket(ticket);
             return 0;
         }else{
@@ -83,12 +82,11 @@ interface TicketOffice{
     sellTicketTo: (audience: Audience)=> void;
 }
 
-
 function TicketOffice(this:TicketOffice, amount:number, ...tickets:Ticket[]){
     this.amount = amount;
     this.tickets = [...tickets];
 
-    this.getTicket=()=> tickets.shift()!;
+    this.getTicket=()=> this.tickets[0];
     this.minusAmount=(amount:number)=>{
         this.amount -= amount;
     }
@@ -96,10 +94,9 @@ function TicketOffice(this:TicketOffice, amount:number, ...tickets:Ticket[]){
         this.amount+=amount;
     }
     this.sellTicketTo=(audience: Audience)=>{
-        this.plusAmount(audience.buy(this.getTicket()))
+        this.plusAmount(audience.buy(this.getTicket()));
     }
 }
-
 
 interface TicketSeller {
     ticketOffice: TicketOffice;
@@ -114,7 +111,6 @@ function TicketSeller(this:TicketSeller, ticketOffice : TicketOffice){
     }
 }
 
-
 interface Theater{
     ticketSeller: TicketSeller;
     enter: (audience: Audience)=>void;
@@ -128,3 +124,19 @@ function Theater(this:any, ticketSeller: TicketSeller){
         ticketSeller.sellTo(audience);
     }
 }
+
+
+const invitation = new (Invitation as any)(new Date());
+const ticket = new (Ticket as any)(2000);
+const bag = new (Bag as any)(10000, invitation, ticket);
+const audience = new(Audience as any)(bag);
+ 
+
+const ticketOffice = new(TicketOffice as any)(20000,new (Ticket as any)(2000), new (Ticket as any)(2000));
+const ticketSeller = new(TicketSeller as any)(ticketOffice);
+const theater = new(Theater as any)(ticketSeller);
+
+console.log(audience.bag.amount); // 10000
+console.log(ticket.fee); // 2000
+theater.enter(audience);  // 티켓사서 영화관 가기~
+console.log(audience.bag.amount); // 8000
