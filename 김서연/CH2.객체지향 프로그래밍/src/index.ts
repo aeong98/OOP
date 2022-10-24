@@ -1,8 +1,40 @@
-
+/**
+ * DiscountCondition (할인 조건)
+ */
 interface DiscountCondition{
     isSatisfiedBy: (screening: Screening)=>boolean;
 }
 
+
+interface SequenceCondition extends DiscountCondition{};
+
+function SequenceCondition(this:SequenceCondition, sequence:number){
+    let _sequence = sequence;
+
+    this.isSatisfiedBy=(screening: Screening)=>screening.isSequence(_sequence);
+}
+
+interface PeriodCondition extends DiscountCondition{
+    dayOfWeek: number;
+    startTime : Date;
+    endTime: Date;
+}
+
+function PeriodCondition(this:PeriodCondition, dayOfWeek:number, startTime:Date, endTime:Date){
+    let _dayOfWeek= dayOfWeek
+    let _startTime= startTime;
+    let _endTime = endTime;
+
+    this.isSatisfiedBy=(screening: Screening)=>{
+        return screening.getStartTime().getDay() === _dayOfWeek &&
+                _startTime.getTime() <=screening.getStartTime().getTime() &&
+                _endTime.getTime() >= screening.getStartTime().getTime()
+    }
+}
+
+/**
+ * DiscountPolicy(할인 정책)
+ */
 interface DiscountPolicy{
     conditions: DiscountCondition[];
     getDiscountAmount: (screening: Screening)=>Money;
@@ -31,7 +63,10 @@ interface AmountDiscountPolicy extends DiscountPolicy{
 function AmountDiscountPolicy(this:AmountDiscountPolicy, discountAmount:Money, ...conditions:DiscountCondition[]){
     let _discountAmount = discountAmount;
     DiscountPolicy.prototype.conditions=[...conditions];
-    this.getDiscountAmount = DiscountPolicy.prototype.discountAmount;
+
+    // prototype 상속
+    this.getDiscountAmount = DiscountPolicy.prototype.getDiscountAmount;
+    this.calculateDiscountAmount=DiscountPolicy.prototype.calculateDiscountAmount;
 }
 
 interface PercentDiscountPolicy extends DiscountPolicy{
@@ -41,35 +76,13 @@ interface PercentDiscountPolicy extends DiscountPolicy{
 function PercentDiscountPolicy(this:PercentDiscountPolicy, percent:number, ...conditions:DiscountCondition[]){
     let _percent = percent;
     DiscountPolicy.prototype.conditions=[...conditions];
+
+    // prototype 상속
     this.getDiscountAmount= DiscountPolicy.prototype.getDiscountAmount;
+    this.calculateDiscountAmount=DiscountPolicy.prototype.calculateDiscountAmount; 
+    // 오버로딩
     this.getDiscountAmount=(screening:Screening)=>{
         return screening.getMovieFee().times(percent);
-    }
-}
-
-interface SequenceCondition extends DiscountCondition{};
-
-function SequenceCondition(this:SequenceCondition, sequence:number){
-    let _sequence = sequence;
-
-    this.isSatisfiedBy=(screening: Screening)=>screening.isSequence(_sequence);
-}
-
-interface PeriodCondition extends DiscountCondition{
-    dayOfWeek: number;
-    startTime : Date;
-    endTime: Date;
-}
-
-function PeriodCondition(this:PeriodCondition, dayOfWeek:number, startTime:Date, endTime:Date){
-    let _dayOfWeek= dayOfWeek
-    let _startTime= startTime;
-    let _endTime = endTime;
-
-    this.isSatisfiedBy=(screening: Screening)=>{
-        return screening.getStartTime().getDay() === _dayOfWeek &&
-                _startTime.getTime() <=screening.getStartTime().getTime() &&
-                _endTime.getTime() >= screening.getStartTime().getTime()
     }
 }
 
@@ -117,7 +130,8 @@ function Reservation(this:Reservation, customer: Customer, screening: Screening,
 }
 
 interface Money{
-    amount: number
+    amount: number;
+    getAmount: ()=>number;
     plus : (amount:Money)=>Money;
     minus : (amount:Money)=>Money;
     times: (amount:number)=>Money;
@@ -128,6 +142,7 @@ interface Money{
 function Money(this:Money, amount:number){
     let _amount= amount;
 
+    this.getAmount=()=>_amount;
     this.plus =(amount: Money) => new (Money as any)(_amount+amount.amount);
     this.minus =(amount: Money) => new (Money as any)(_amount-amount.amount);
     this.times = (amount:number)=>new (Money as any)(_amount* amount);
@@ -160,3 +175,11 @@ function Screening(this:Screening, movie:Movie, sequence:number, whenScrened: Da
 
 }
 
+let avatar = new (Movie as any)(
+        new (Money as any)(1000), 
+        20, 
+        "아바타", 
+        new (AmountDiscountPolicy as any)( new (Money as any)(100), [])
+)
+
+console.log(avatar.getFee().getAmount());
