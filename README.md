@@ -11,7 +11,7 @@
 <br />
 
 ### 예제 코드
-> 각 챕터별로 예제코드는 Typescript + Factory Function 으로 작성합니다.
+> 각 챕터별로 예제코드는 Typescript + Factory Function 으로 작성해보았습니다. Factory Function 의 특징과, 장점은 아래와 같습니다.
 
 #### Factory Function 이란?
 ##### 1. Factory Function 기본 사용 예제
