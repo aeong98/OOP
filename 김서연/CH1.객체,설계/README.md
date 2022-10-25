@@ -25,7 +25,7 @@
 - 다시말해서 관람객과 판매원을 **자율적인 존재** 로 만드는것.
 
 ## 자율성을 높이자.
-- 1. Theater 의 enter 메서드에서 TheaterOffice 에 접근하는 모든 코드를 TicketSeller 내부로 숨기기.
+1. Theater 의 enter 메서드에서 TheaterOffice 에 접근하는 모든 코드를 TicketSeller 내부로 숨기기.
     - 결과적으로 ticketOffice 에 대한 접근은 TicketSeller 안에서만 존재하게 된다.
     - TicketSeller 가 일을 스스로 수행하게 됨.
     - 개념적으로 물리적으로 객체 내부의 세부적인 사항을 감추는것을 **캡슐화(encapsulation)** 라고 부른다.
@@ -34,7 +34,7 @@
     - 객체를 인터페이스와 구현으로 나누고, 인터페이스만을 공개하는 것은 객체 사이의 결합도를 낮추고 변경하기 쉬운 코드를 작성하기 위해 따라야 하는 기본적인 설계 원칙이다. 
     - 위의 과정을 통해 Theater 에서 TicketOffice 로의 의존성에 제거됐다. 
 
-- 2. TicketSeller 다음으로 Audience 캡슐화를 개선하자.
+2. TicketSeller 다음으로 Audience 캡슐화를 개선하자.
     - TicketSeller 는 Audience 의 getBag 메서드를 호출해서 Audience 내부의 Bag 인스턴스에 직접 접근한다. (자율적이지 않음.)
     - Bag 에 접근하는 모든 로직을 Audience 내부로 감추기 위해 Audience 에 buy 메서드를 추가하고, TicketSeller 의 sellTo 메서드에서 getBag 메서드에 접근하는 부분을 buy 메서드로 옮기자.
     - TicketSeller와 Audience 사이의 결합도가 낮아졌다. 
