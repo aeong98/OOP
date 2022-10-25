@@ -8,102 +8,114 @@ interface DiscountCondition{
 
 interface SequenceCondition extends DiscountCondition{};
 
-function SequenceCondition(this:SequenceCondition, sequence:number){
+function SequenceCondition(sequence:number):SequenceCondition{
     let _sequence = sequence;
 
-    this.isSatisfiedBy=(screening: Screening)=>screening.isSequence(_sequence);
+    const isSatisfiedBy=(screening: Screening)=>screening.isSequence(_sequence);
+
+    return Object.freeze({
+        isSatisfiedBy
+    })
 }
 
 interface PeriodCondition extends DiscountCondition{
-    dayOfWeek: number;
-    startTime : Date;
-    endTime: Date;
+    isSatisfiedBy : (screening: Screening)=> boolean;
 }
 
-function PeriodCondition(this:PeriodCondition, dayOfWeek:number, startTime:Date, endTime:Date){
+function PeriodCondition(dayOfWeek:number, startTime:Date, endTime:Date):PeriodCondition{
     let _dayOfWeek= dayOfWeek
     let _startTime= startTime;
     let _endTime = endTime;
 
-    this.isSatisfiedBy=(screening: Screening)=>{
+    const isSatisfiedBy=(screening: Screening)=>{
         return screening.getStartTime().getDay() === _dayOfWeek &&
                 _startTime.getTime() <=screening.getStartTime().getTime() &&
                 _endTime.getTime() >= screening.getStartTime().getTime()
     }
+
+    return Object.freeze({
+        isSatisfiedBy
+    })
 }
 
 /**
  * DiscountPolicy(할인 정책)
  */
 interface DiscountPolicy{
-    conditions: DiscountCondition[];
     getDiscountAmount: (screening: Screening)=>Money;
     calculateDiscountAmount: (screening: Screening)=>Money;
 }
 
-function DiscountPolicy(this:DiscountPolicy, conditions:DiscountCondition[]){
-    this.conditions = [...conditions];
+function DiscountPolicy(conditions:DiscountCondition[]):DiscountPolicy{
+    let _conditions = [...conditions];
     
-    this.getDiscountAmount = (screening: Screening)=> screening.getMovieFee();
+    const getDiscountAmount = (screening: Screening)=> screening.getMovieFee();
 
-    this.calculateDiscountAmount = (screening: Screening)=>{
-        for(let discountCondition of this.conditions){
+    const calculateDiscountAmount = (screening: Screening)=>{
+        for(let discountCondition of _conditions){
             if(discountCondition.isSatisfiedBy(screening)){
-                return this.getDiscountAmount(screening);
+                return getDiscountAmount(screening);
             }
         }
         return new (Money as any)(0);
-    }   
+    }  
+    return Object.freeze({
+        getDiscountAmount,
+        calculateDiscountAmount
+    })
 }
 
-interface AmountDiscountPolicy extends DiscountPolicy{
-    discountAmount: Money;
-}
+interface AmountDiscountPolicy extends DiscountPolicy{}
 
-function AmountDiscountPolicy(this:AmountDiscountPolicy, discountAmount:Money, ...conditions:DiscountCondition[]){
-    let _discountAmount = discountAmount;
-    DiscountPolicy.prototype.conditions=[...conditions];
-
+function AmountDiscountPolicy(discountAmount:Money, ...conditions:DiscountCondition[]):AmountDiscountPolicy{
     // prototype 상속
-    this.getDiscountAmount = DiscountPolicy.prototype.getDiscountAmount;
-    this.calculateDiscountAmount=DiscountPolicy.prototype.calculateDiscountAmount;
+    const getDiscountAmount = DiscountPolicy(conditions).getDiscountAmount;
+    const calculateDiscountAmount=DiscountPolicy(conditions).calculateDiscountAmount;
+
+    return Object.freeze({
+        getDiscountAmount,
+        calculateDiscountAmount
+    })
 }
 
 interface PercentDiscountPolicy extends DiscountPolicy{
-    percent: number;
+    
 }
 
-function PercentDiscountPolicy(this:PercentDiscountPolicy, percent:number, ...conditions:DiscountCondition[]){
+function PercentDiscountPolicy(percent:number, ...conditions:DiscountCondition[]):PercentDiscountPolicy{
     let _percent = percent;
-    DiscountPolicy.prototype.conditions=[...conditions];
-
     // prototype 상속
-    this.getDiscountAmount= DiscountPolicy.prototype.getDiscountAmount;
-    this.calculateDiscountAmount=DiscountPolicy.prototype.calculateDiscountAmount; 
+    const calculateDiscountAmount=DiscountPolicy(conditions).calculateDiscountAmount; 
     // 오버로딩
-    this.getDiscountAmount=(screening:Screening)=>{
+    const getDiscountAmount=(screening:Screening)=>{
         return screening.getMovieFee().times(percent);
     }
+
+    return Object.freeze({
+        calculateDiscountAmount,
+        getDiscountAmount
+    })
 }
 
 
 interface Movie {
- title: string;
- runnigTime: number;
- fee: Money;
- discountPolicy: DiscountPolicy;
  getFee: ()=>Money;
  calculateMovieFee : (screening: Screening)=> Money;
 }
 
-function Movie(this: Movie, fee:Money, runnigTime:number, title:string, discountPolicy:DiscountPolicy){
+function Movie(fee:Money, runnigTime:number, title:string, discountPolicy:DiscountPolicy):Movie{
     let _fee=fee;
     let _runnigTime = runnigTime;
     let _title =title;
     let _discountPolicy = discountPolicy;
 
-    this.getFee=()=>_fee;
-    this.calculateMovieFee=(screening: Screening)=>_fee.minus(_discountPolicy.calculateDiscountAmount(screening));
+    const getFee=()=>_fee;
+    const calculateMovieFee=(screening: Screening)=>_fee.minus(_discountPolicy.calculateDiscountAmount(screening));
+
+    return Object.freeze({
+        getFee,
+        calculateMovieFee
+    })
 }
 
 interface Customer{
@@ -115,22 +127,32 @@ function Customer(this:Customer){
 }
 
 interface Reservation{
-    customer: Customer;
-    screening: Screening;
-    fee: Money;
-    audienceCount: number;
+    getCustomer: ()=>Customer;
+    getScreening : ()=>Screening;
+    getFee :()=>Money;
+    getAudienceCount: ()=>number;
 }
 
-function Reservation(this:Reservation, customer: Customer, screening: Screening, fee:Money, audienceCount:number){
+function Reservation(customer: Customer, screening: Screening, fee:Money, audienceCount:number):Reservation{
     let _customer=customer;
     let _screening=screening;
     let _fee=fee;
     let _audienceCount=audienceCount;
 
+    const getCustomer = ()=>_customer;
+    const getScreening = ()=>_screening;
+    const getFee = ()=>_fee;
+    const getAudienceCount = ()=>_audienceCount;
+
+    return Object.freeze({
+        getCustomer,
+        getScreening,
+        getFee,
+        getAudienceCount
+    })
 }
 
 interface Money{
-    amount: number;
     getAmount: ()=>number;
     plus : (amount:Money)=>Money;
     minus : (amount:Money)=>Money;
@@ -139,47 +161,59 @@ interface Money{
     isGreaterThan : (other:Money)=> boolean;
 }
 
-function Money(this:Money, amount:number){
+function Money(amount:number):Money{
     let _amount= amount;
 
-    this.getAmount=()=>_amount;
-    this.plus =(amount: Money) => new (Money as any)(_amount+amount.amount);
-    this.minus =(amount: Money) => new (Money as any)(_amount-amount.amount);
-    this.times = (amount:number)=>new (Money as any)(_amount* amount);
-    this.isLessThan = (other: Money)=> _amount < other.amount;
-    this.isGreaterThan = (other:Money)=>_amount > other.amount;
+    const getAmount=()=>_amount;
+    const plus =(amount: Money) => new (Money as any)(_amount+amount.getAmount());
+    const minus =(amount: Money) => new (Money as any)(_amount-amount.getAmount());
+    const times = (amount:number)=>new (Money as any)(_amount* amount);
+    const isLessThan = (other: Money)=> _amount < other.getAmount();
+    const isGreaterThan = (other:Money)=>_amount > other.getAmount();
+
+    return Object.freeze({
+        getAmount,
+        plus,
+        minus,
+        times,
+        isLessThan,
+        isGreaterThan
+    })
 }
 
 
 interface Screening{
-    movie: Movie;
-    sequence: number;
-    whenScreened: Date;
     getStartTime : ()=>Date;
     isSequence : (sequence:number)=>boolean;
     getMovieFee: ()=> Money;
     reserve: (customer: Customer, audienceCount:number)=> Reservation;
 }
 
-function Screening(this:Screening, movie:Movie, sequence:number, whenScrened: Date){
+function Screening(this: Screening, movie:Movie, sequence:number, whenScrened: Date):Screening{
     let _movie= movie;
     let _sequence=sequence;
     let _whenScreened=whenScrened;
     
     const calculateFee = (audienceCount:number)=> _movie.calculateMovieFee(this).times(audienceCount);
 
-    this.getStartTime =()=> _whenScreened;
-    this.isSequence = (sequence:number) => _sequence === sequence;
-    this.getMovieFee=()=> _movie.calculateMovieFee(this);
-    this.reserve = (customer: Customer, audienceCount:number)=> new (Reservation as any)(customer, this, calculateFee(audienceCount), audienceCount); 
+    const getStartTime =()=> _whenScreened;
+    const isSequence = (sequence:number) => _sequence === sequence;
+    const getMovieFee=()=> _movie.calculateMovieFee(this);
+    const reserve = (customer: Customer, audienceCount:number)=> Reservation(customer, this, calculateFee(audienceCount), audienceCount); 
 
+    return Object.freeze({
+        getStartTime,
+        isSequence,
+        getMovieFee,
+        reserve
+    })
 }
 
-let avatar = new (Movie as any)(
-        new (Money as any)(1000), 
+let avatar = Movie(
+        Money(1000), 
         20, 
         "아바타", 
-        new (AmountDiscountPolicy as any)( new (Money as any)(100), [])
+        AmountDiscountPolicy(Money(100), SequenceCondition(10))
 )
 
 console.log(avatar.getFee().getAmount());
