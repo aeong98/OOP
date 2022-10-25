@@ -1,28 +1,33 @@
 interface Invitation{
-    when: Date;
+    getWhen : ()=>Date;
 }
 
-function Invitation(this:Invitation, when: Date){
-    this.when =when;
+function Invitation(when: Date):Invitation{
+    const _when= when;
+    const getWhen = ()=> _when;
+
+    return Object.freeze({
+        getWhen
+    })
 }
 
 interface Ticket{
-    fee: number;
     getFee : ()=>number;
 }
 
-function Ticket(this:Ticket, fee:number){
-    this.fee = fee;
+function Ticket(fee:number):Ticket{
+    const _fee = fee;
 
-    this.getFee = ()=>{ 
-        return this.fee;
+    const getFee = ()=>{ 
+        return _fee;
     }
+    return Object.freeze({
+        getFee
+    })
 }
 
 interface Bag {
-    amount: number;
-    invitation : Invitation;
-    ticket: Ticket;
+    getAmount: ()=>number;
     hold: (ticket:Ticket)=>number;
     hasInvitation : ()=> boolean;
     hasTicket : ()=>boolean;
@@ -31,112 +36,138 @@ interface Bag {
     plusAmount: (amount:number)=>void;
 }
 
-function Bag(this:Bag, amount:number, invitation:Invitation,  ticket:Ticket){
-    this.amount=amount;
-    this.invitation=invitation;
-    this.ticket=ticket;
+function Bag(amount:number, invitation:Invitation,  ticket:Ticket):Bag{
+    let _amount=amount;
+    let _invitation=invitation;
+    let _ticket=ticket;
 
-    this.hold=(ticket:Ticket)=>{
-        if(!this.hasInvitation()){
-            this.setTicket(ticket);
+    const getAmount = ()=> _amount;
+
+    const hold=(ticket:Ticket)=>{
+        if(!hasInvitation()){
+            setTicket(ticket);
             return 0;
         }else{
-            this.setTicket(ticket);
-            this.minusAmount(ticket.getFee());
+            setTicket(ticket);
+            minusAmount(ticket.getFee());
             return ticket.getFee();
         }
     }
 
-    this.hasInvitation = () => invitation!==null;
-    this.hasTicket = ()=> ticket!==null;
-    this.setTicket = ()=>{
-        this.ticket=ticket;
+    const hasInvitation = () => _invitation!==null;
+    const hasTicket = ()=> _ticket!==null;
+    const setTicket = (ticket: Ticket)=>{
+        _ticket=ticket;
     }
-    this.minusAmount = (amount:number)=>{
-        this.amount -= amount;
+    const minusAmount = (amount:number)=>{
+        _amount -= amount;
     }
-    this.plusAmount = (amount:number)=>{
-        this.amount +=amount;
+    const plusAmount = (amount:number)=>{
+        _amount +=amount;
     }
+
+    return Object.freeze({
+        getAmount,
+        hold,
+        hasInvitation,
+        hasTicket,
+        setTicket,
+        minusAmount,
+        plusAmount
+    });
 }
 
 interface Audience{
-    bag:Bag;
     getBag: ()=>Bag;
     buy: (ticket:Ticket)=>number;
 }
 
-function Audience(this:Audience, bag:Bag){
-    this.bag= bag;
+function Audience(bag:Bag):Audience{
+    const _bag= bag;
 
-    this.getBag = ()=> this.bag;
-    this.buy =(ticket: Ticket)=> this.bag.hold(ticket);
+    const getBag = ()=> _bag;
+    const buy =(ticket: Ticket)=> _bag.hold(ticket);
+
+    return Object.freeze({
+        getBag,
+        buy
+    })
 }
 
 interface TicketOffice{
-    amount: number;
-    tickets: Ticket[];
     getTicket: ()=>Ticket;
     minusAmount: (amount:number)=>void;
     plusAmount: (amount:number)=>void;
     sellTicketTo: (audience: Audience)=> void;
 }
 
-function TicketOffice(this:TicketOffice, amount:number, ...tickets:Ticket[]){
-    this.amount = amount;
-    this.tickets = [...tickets];
+function TicketOffice(amount:number, ...tickets:Ticket[]):TicketOffice{
+    let _amount = amount;
+    let _tickets = [...tickets];
 
-    this.getTicket=()=> this.tickets[0];
-    this.minusAmount=(amount:number)=>{
-        this.amount -= amount;
+    const getTicket=()=> _tickets[0];
+    const minusAmount=(amount:number)=>{
+        _amount -= amount;
     }
-    this.plusAmount=(amount:number)=>{
-        this.amount+=amount;
+    const plusAmount=(amount:number)=>{
+        _amount+=amount;
     }
-    this.sellTicketTo=(audience: Audience)=>{
-        this.plusAmount(audience.buy(this.getTicket()));
+     const sellTicketTo=(audience: Audience)=>{
+        plusAmount(audience.buy(getTicket()));
     }
+
+    return Object.freeze({
+        getTicket,
+        minusAmount,
+        plusAmount,
+        sellTicketTo
+    })
 }
 
 interface TicketSeller {
-    ticketOffice: TicketOffice;
     sellTo: (audience:Audience)=>void;
 }
 
-function TicketSeller(this:TicketSeller, ticketOffice : TicketOffice){
-    this.ticketOffice= ticketOffice;
+function TicketSeller(ticketOffice : TicketOffice):TicketSeller{
+    let _ticketOffice= ticketOffice;
 
-    this.sellTo=(audience:Audience)=>{
-        ticketOffice.sellTicketTo(audience);
+    const sellTo=(audience:Audience)=>{
+        _ticketOffice.sellTicketTo(audience);
     }
+    return Object.freeze({
+        sellTo,
+    })
 }
 
 interface Theater{
-    ticketSeller: TicketSeller;
     enter: (audience: Audience)=>void;
 }
 
 
-function Theater(this:any, ticketSeller: TicketSeller){
-    this.ticketSeller=ticketSeller;
+function Theater(ticketSeller: TicketSeller):Theater{
+    let _ticketSeller=ticketSeller;
     
-    this.enter=(audience:Audience)=>{
-        ticketSeller.sellTo(audience);
+    const enter=(audience:Audience)=>{
+        _ticketSeller.sellTo(audience);
     }
+
+    return Object.freeze({
+        enter
+    })
 }
 
 // TODO: 아니 함수 생성자 타입스크립트 안되는 거 실화? 대상에 구문 시그니처가 없는 'new' 식에는 암시적으로 'any' 형식이 포함됩니다.ts(7009) <- 이거 해결 어떻게
-const invitation = new (Invitation as any)(new Date());
-const ticket = new (Ticket as any)(2000);
-const bag = new (Bag as any)(10000, invitation, ticket);
-const audience = new(Audience as any)(bag);
+const invitation = Invitation(new Date());
+const ticket = Ticket(2000);
+const bag = Bag(10000, invitation, ticket);
+const audience = Audience(bag);
  
 
-const ticketOffice = new(TicketOffice as any)(20000,new (Ticket as any)(2000), new (Ticket as any)(2000));
-const ticketSeller = new(TicketSeller as any)(ticketOffice);
-const theater = new(Theater as any)(ticketSeller);
+const ticketOffice = TicketOffice(20000, Ticket(2000), Ticket(2000));
+const ticketSeller = TicketSeller(ticketOffice);
+const theater = Theater(ticketSeller);
 
-console.log(audience.bag.amount); // 10000
-console.log(ticket.fee); // 2000
+console.log(audience.getBag().getAmount()); // 10000
+console.log(ticket.getFee()); // 2000
 theater.enter(audience);  // 티켓사서 영화관 가기~
-console.log(audience.bag.amount); // 8000
+console.log(audience.getBag().getAmount()); // 8000
