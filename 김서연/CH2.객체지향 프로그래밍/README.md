@@ -108,4 +108,72 @@ let avatar = new (Movie as any)(
 ### 인터페이스와 다형성
 - 종종 구현은 공유할 필요가 없고, 순수하게 인터페이스만 공유하고 싶을 때가 있다. 
 - C#과 자바에서는 인터페이스라는 프로그래밍 요소를 제공한다.
-- 
+ - 추상 클래스를 이용해 다형성을 구현했던 할인 정책과 달리 할인 조건은 구현을 공유할 필ㅎ가 없기 때문에, 인터페이스를 이용해 타입계층을 구현한다.
+
+# 5. 추상화와 유연성
+### 추상화의 힘
+- 같은 계층에 속하는 클래스들이 공통으로 가질 수 있는 인터페이스를 정의하며, 구현의 일부 또는 전부를 자식 클래스가 결정할 수 있도록 결정권을 위임한다.
+- 추상화를 사용하면 **세부적인 내용을 무시한채 상위 정책을 쉽고 간단하게 표현할 수 있다.**
+- 할인 정책이나, 할인 조건의 새로운 자식 클래스들은 추상화를 이용해서 정의한 상위의 협력 흐름을 그대로 따르게 된다.
+- 이는, 재사용 가능한 설계의 기본을 이루는 **디자인 패턴(design patter)** 이나 **프레임워크(framework)** 의 근간을 이룬다.
+- 추상화를 이용해, 상위 정책을 표현하면 기존 구조를 수정하지 않고도 새로운 기능을 쉽게 추가하고 확장할 수 있다.
+
+### 유연한 설계
+- **책임의 위치를 결정하기 위해 조건문을 사용하는 것은 협력의 설계 측면에서 대부분 좋지 않은 경우이다**
+- 할인요금이 0원일때를 에외처리하기 위해 -> 이 할인 요금을 계산할 책임을 그대로 DiscountPolicy 계층에 유지시키는 것이다. `NoneDiscountPolicy` 클래스를 추가하자.
+
+```
+interface NoneDiscountPolicy extends DiscountPolicy{}
+
+function NoneDiscountPolicy():DiscountPolicy{
+    const calculateDiscountAmount = (screening: Screening)=> Money(0);
+    const getDiscountAmount = (screening: Screening) => Money(0);
+
+    return Object.freeze({
+        calculateDiscountAmount,
+        getDiscountAmount
+    })
+}
+
+/**할인 요금이 0원일 경우 */
+let starWars = Movie(
+    Money(1000),
+    20,
+    "스타워즈",
+    NoneDiscountPolicy()
+)
+
+```
+- 이 때 중요한 것은 기존의 Movie, DiscountPolicy 는 수정하지 않고, NoneDiscountPolicy라는 새로운 클래스를 추가하는 것만으로 애플리케이션의 기능을 확장했다는것이다.
+- 추상화를 중심으로 코드의 구조를 설계하면, 유연하고 확장 가능한 설계를 만들 수 있다. 
+
+### 코드 재사용
+- 코드 재사용을 위해서는 상속보다는 합성(composition)이 더 좋은 방법일 수 도 있다. 
+- 합성은 다른 객체의 인스턴스를 자신의 인스턴스 변수로 포함해서 재사용하는 방법을 말한다. 
+- Movie 가 DiscountPolicy의 코드를 재사용하는 방법을 Movie 를 직접 상속받아 AmountDiscountMovie 와 PecentDiscountMovie 라는 두개의 클래스를 추가하면 합성을 사용한 기존 방법과 동일하다. 
+
+## 그럼에도, 상속 대신 합성을 선호하는 이유는?
+### 상속
+- 두가지 관점에서 설계에 안 좋은 영향을 미친다.
+- 1. 캡슐화를 위반한다는 것
+  - 상속을 이용하기 위해서는 부모 클래스의 내부 구조를 잘 알고 있어야 한다.
+  - 자식클래스가 부모 클래스에 강하게 결합되도록 만들기 때문에, 부모 클래스를 변경할 때 자식 클래스도 함께 변경될 확률을 높인다.
+- 2. 설계를 유연하지 못하게 만든다는 것
+  - 상속은 부모 클래스와 자식 클래스 사이의 관계를 컴파일 시점에 결정한다. 따라서, 실행 시점에 객체의 종류를 변경하는 것이 불가능하다.
+  - 반면, 인스턴스 변수로 연결한 기존 방법을 사용하면 실행 시점에 할인 정책을 간단하게 변경할 수 있다.
+  ```
+      const changeDiscountPolicy=(discountPolicy:DiscountPolicy) =>{_discountPolicy=discountPolicy};
+
+      // 인스턴스 변수로 연결해두었기 떄문에, 실행 시점에 할인 정책을 간단하게 변경할 수 있게된다.
+      starWars.changeDiscountPolicy(AmountDiscountPolicy(Money(100), SequenceCondition(10)))
+  ```
+
+### 합성
+- Movie는 요금을 계산하기 위해 DiscountPolicy의 코드를 재사용한다.
+- Movie 가ㅇDiscountPolicy의 인터페이스를 통해 약하게 결합된다는 것이다. 실제로는 Movie 는 DiscountPolicy가 외부에 calculateDiscountAmount 메서드를 제공한다는 사실만 알고, 내부 구현에 대해서는 전혀 알지 못한다.
+- 이처럼 인스페이스에 정의된 메시지를 통해서만 코드를 재사용하는 방법을 `합성` 이라고 한다.
+
+## 정리
+- 이번 2장 예제코드에서 Movie 와 Discount는 합성관계로 연결돼있고
+- DiscountPolicy 와 AmountDiscoutPolicy, PercentDiscoutPolicy 는 상속 관계로 연결돼있다.
+- 이처럼 코드를 재사용하는 경우에는, 상속보다 합성을 선호하는 것이 옳지만 다형성을 위해 인터페이스를 재사용하는 경우에는 상속과 합성을 함께 조합해서 사용할 수 밖에 없다.

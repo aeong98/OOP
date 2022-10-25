@@ -1,5 +1,6 @@
 /**
- * DiscountCondition (할인 조건)
+ * DiscountCondition (할인 조건) -> SequenceCondition, PeriodCondition
+ * - 인터페이스만 공유
  */
 interface DiscountCondition{
     isSatisfiedBy: (screening: Screening)=>boolean;
@@ -39,7 +40,8 @@ function PeriodCondition(dayOfWeek:number, startTime:Date, endTime:Date):PeriodC
 }
 
 /**
- * DiscountPolicy(할인 정책)
+ * DiscountPolicy(할인 정책) -> AmoundDiscountPolicy, PercentDiscountPolicy
+ * - 추상 클래스 (DiscountPolicy) 를 통해 다형성을 구현
  */
 interface DiscountPolicy{
     getDiscountAmount: (screening: Screening)=>Money;
@@ -97,10 +99,23 @@ function PercentDiscountPolicy(percent:number, ...conditions:DiscountCondition[]
     })
 }
 
+interface NoneDiscountPolicy extends DiscountPolicy{}
+
+function NoneDiscountPolicy():DiscountPolicy{
+    const calculateDiscountAmount = (screening: Screening)=> Money(0);
+    const getDiscountAmount = (screening: Screening) => Money(0);
+
+    return Object.freeze({
+        calculateDiscountAmount,
+        getDiscountAmount
+    })
+}
+
 
 interface Movie {
  getFee: ()=>Money;
  calculateMovieFee : (screening: Screening)=> Money;
+ changeDiscountPolicy : (discountPolicy :DiscountPolicy)=>void;
 }
 
 function Movie(fee:Money, runnigTime:number, title:string, discountPolicy:DiscountPolicy):Movie{
@@ -111,10 +126,12 @@ function Movie(fee:Money, runnigTime:number, title:string, discountPolicy:Discou
 
     const getFee=()=>_fee;
     const calculateMovieFee=(screening: Screening)=>_fee.minus(_discountPolicy.calculateDiscountAmount(screening));
+    const changeDiscountPolicy=(discountPolicy:DiscountPolicy) =>{_discountPolicy=discountPolicy};
 
     return Object.freeze({
         getFee,
-        calculateMovieFee
+        calculateMovieFee,
+        changeDiscountPolicy
     })
 }
 
@@ -215,5 +232,18 @@ let avatar = Movie(
         "아바타", 
         AmountDiscountPolicy(Money(100), SequenceCondition(10))
 )
+
+/**할인 요금이 0원일 경우 */
+let starWars = Movie(
+    Money(1000),
+    20,
+    "스타워즈",
+    NoneDiscountPolicy()
+)
+
+// 인스턴스 변수로 연결해두었기 떄문에, 실행 시점에 할인 정책을 간단하게 변경할 수 있게된다.
+starWars.changeDiscountPolicy(AmountDiscountPolicy(Money(100), SequenceCondition(10)))
+
+
 
 console.log(avatar.getFee().getAmount());
