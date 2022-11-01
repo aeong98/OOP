@@ -3,10 +3,13 @@ import {hasTextsUnderSpecificLength} from "../utils/array.js";
 import {extractTotalValuesOfObjects} from "../utils/object.js";
 
 export function DijkstraNavigation(){
-    this.init = ({$departure, $arrival})=>{
+    this.init=()=>{
         this.dijkStra=new Dijkstra();
-        this.departure= $departure;
-        this.arrival=$arrival;
+    };
+
+    this.setDepartureArrival=(departure, arrival)=>{
+        this.departure=departure;
+        this.arrival=arrival;
     };
 
     this.setPaths=(paths)=>{

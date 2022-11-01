@@ -83,7 +83,7 @@ export const courses = [
 ```
 위와 같이 데이터를 `export`하면 아래와 같이 데이터를 `import` 하여 사용할 수 있다.
 ```javascript
-import { users, courses } from './paths.js'
+import { users, courses } from './data.js'
 
 function App() {
   this.users = users
