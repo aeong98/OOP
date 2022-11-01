@@ -12,9 +12,12 @@ export default function SearchPathValidator(){
         checkIsSameStations();
     };
 
+    const hasTextsUnderTwoCharacters=(...texts)=>{
+        return [...texts].some((check)=>check.length<2);
+    };
+
     const checkIsStationTextsOverTwoCharacters=()=>{
-        const hasTextUnderTwoCharacter = [this.departure, this.arrival].some((check)=>check.length<2);
-        if(hasTextUnderTwoCharacter){
+        if(hasTextsUnderTwoCharacters(this.departure, this.arrival)){
             throw Error("출발역과 도착역은 2글자 이상이어야 합니다.");
         }
     };
@@ -35,8 +38,10 @@ export default function SearchPathValidator(){
         }
     };
 
+    const IsSameString = (a,b) => a===b;
+
     const checkIsSameStations=()=> {
-        if(this.departure===this.arrival){
+        if(IsSameString(this.departure,this.arrival)){
             throw Error('출발역과, 도착역은 같을 수 없습니다.');
         }
     };
