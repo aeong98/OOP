@@ -7,6 +7,7 @@ import SearchTypeRadioButton from "./components/SearchTypeRadioButton.js";
 import SearchSubmitButton from "./components/SearchSubmitButton.js";
 import SearchResult from "./components/SearchResult.js";
 import SearchPathValidator from "./service/SearchPathValidator.js";
+import {constructObject} from "./utils/constructObject.js";
 
 export default function App({$target}){
     this.state={
@@ -74,8 +75,7 @@ export default function App({$target}){
     });
 
     const validateInputs = (paths, departure, arrival)=>{
-        const searchPathValidator = new SearchPathValidator();
-        searchPathValidator.init({
+        const searchPathValidator = constructObject(SearchPathValidator,{
             $paths: paths,
             $departure: departure,
             $arrival: arrival,
@@ -83,8 +83,7 @@ export default function App({$target}){
         searchPathValidator.validate();
     }
 
-    const subwayNavigation = new SubwayNavigation();
-    subwayNavigation.init({
+    const subwayNavigation = constructObject(SubwayNavigation,{
         $paths: this.state.paths,
         $Algorithm: DijkstraNavigation
     });
