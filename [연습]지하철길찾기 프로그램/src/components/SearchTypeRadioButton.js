@@ -1,3 +1,5 @@
+import {SEARCH_TYPE_TEXT, SHORTEST_LONG, SHORTEST_TIME} from "../constants.js";
+
 export default function SearchTypeRadioButton({$target, initialState, onChange}){
     this.state= initialState;
 
@@ -12,14 +14,14 @@ export default function SearchTypeRadioButton({$target, initialState, onChange})
     this.render = ()=>{
         const htmlString =`
           <div style="display: flex;">
-            <div>
-              <input type="radio" id="shortest-long" name="search-type" value="shortest-long">
-              <label for="shortest-long">최단거리</label>
-            </div>
-            <div>
-              <input type="radio" id="shortest-time" name="search-type" value="shortest-time">
-              <label for="shortest-time">최소시간</label>
-            </div>
+            ${
+                [SHORTEST_LONG, SHORTEST_TIME].map(name=> `
+                     <div>
+                      <input type="radio" name="search-type" id=${name} value=${name}>
+                      <label for=${name}>${SEARCH_TYPE_TEXT[name]}</label>
+                    </div>
+                `).join('')
+            }
            </div>
         `;
 
