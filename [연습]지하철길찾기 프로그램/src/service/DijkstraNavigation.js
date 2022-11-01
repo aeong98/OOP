@@ -3,18 +3,15 @@ import {hasTextsUnderSpecificLength} from "../utils/array.js";
 import {extractTotalValuesOfObjects} from "../utils/object.js";
 
 export function DijkstraNavigation(){
-    this.init=()=>{
+    this.init=({departure, arrival})=>{
         this.dijkStra=new Dijkstra();
-    };
-
-    this.setDepartureArrival=(departure, arrival)=>{
         this.departure=departure;
         this.arrival=arrival;
     };
 
-    this.setPaths=(paths)=>{
-        this.paths=paths;
-        paths.map((path)=>this.dijkStra.addEdge(path.departure, path.arrival, path.weight));
+    this.setPaths=(Paths)=>{
+        this.Paths =Paths;
+        Paths.getPaths().map((path)=>this.dijkStra.addEdge(path.departure, path.arrival, path.weight));
     }
 
     this.findShortestPath = ()=> {
@@ -56,6 +53,6 @@ export function DijkstraNavigation(){
         }
     };
 
-    const getTotalStation = () => extractTotalValuesOfObjects(this.paths, ["departure", "arrival"]);
+    const getTotalStation = () => extractTotalValuesOfObjects(this.Paths.getPaths(), ["departure", "arrival"]);
     const IsSameString = (a,b) => a===b;
 }

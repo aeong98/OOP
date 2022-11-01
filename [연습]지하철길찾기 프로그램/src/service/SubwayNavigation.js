@@ -3,21 +3,39 @@ import {createObject} from "../utils/object.js";
 
 export default function SubwayNavigation (){
     this.init=({paths, Algorithm})=>{
-        this.Paths= createObject(Paths, paths);
-        this.Algorithm= createObject(Algorithm);
+        this.paths=paths;
+        this.Algorithm= Algorithm;
     };
 
-    this.findShortestDistancePath = (departure, arrival) =>
-        findPath(departure, arrival,this.Paths.getPathsWithDistanceWeight());
+    this.findShortestDistancePath = (departure, arrival) =>{
+        return findPath(departure, arrival, this.paths.map((path)=>(
+            {
+                departure: path.departure,
+                arrival: path.arrival,
+                weight: path.distance,
+            })
+        ));
+    };
 
-    this.findShortestTimePath = (departure, arrival)=>
-        findPath(departure, arrival,this.Paths.getPathsWithTimeWeight());
+    this.findShortestTimePath = (departure, arrival) =>{
+        return findPath(departure, arrival,this.paths.map((path)=>(
+            {
+                departure: path.departure,
+                arrival: path.arrival,
+                weight: path.time,
+            })
+        ) );
+    };
 
-    const findPath = (departure, arrival, path)=>{
-        this.Algorithm.setDepartureArrival(departure, arrival);
-        this.Algorithm.setPaths(path);
-        this.Algorithm.validate();
-        return this.Algorithm.findShortestPath();
+    const findPath = (departure, arrival, paths)=>{
+        const _Algorithm = createObject(this.Algorithm, {
+            departure: departure,
+            arrival: arrival
+        });
+        const _Paths= createObject(Paths, paths)
+        _Algorithm.setPaths(_Paths);
+        _Algorithm.validate();
+        return _Algorithm.findShortestPath();
     }
 }
 
