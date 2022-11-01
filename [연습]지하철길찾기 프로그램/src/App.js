@@ -74,7 +74,6 @@ export default function App({$target}){
 
     const findPath = () =>{
         const {paths, departure, arrival, searchType} = this.state;
-        console.log(paths);
         const subwayNavigation = createObject(SubwayNavigation,{
             $paths:paths,
             $Algorithm: DijkstraNavigation,
