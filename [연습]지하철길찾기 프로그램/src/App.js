@@ -56,11 +56,15 @@ export default function App({$target}){
     const searchSubmitButton = new SearchSubmitButton({
         $target,
         onClick: ()=>{
+            try{
                 const pathSearchResult= findPath();
                 searchResult.setState({
                     ...this.state,
                     pathSearchResult,
                 })
+            }catch(error) {
+                alert(error);
+            }
         }
     });
 
