@@ -1,13 +1,20 @@
+import {extractTotalValuesOfObjects} from "../utils/object.js";
+
 export default function Paths(){
-    this.init=($paths)=>{
-        this.paths=$paths;
+    this.init=(paths)=>{
+        this.paths=paths;
     };
 
-    this.getPaths=()=> this.paths.map((path)=>(
-        {
-            departure: path.departure,
-            arrival: path.arrival,
-            weight: path.weight,
-        })
-    );
+    this.setPaths=(paths)=>{
+        this.paths=paths;
+    }
+
+    this.getPaths=()=>{
+        return this.paths;
+    }
+
+    this.checkIsStationExistsInPaths=(stations)=>{
+        const totalStation = extractTotalValuesOfObjects(this.getPaths(), ["departure", "arrival"]);
+        return totalStation.includes(stations);
+    }
 }

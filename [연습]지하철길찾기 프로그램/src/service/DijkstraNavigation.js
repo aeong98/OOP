@@ -1,17 +1,24 @@
 import Dijkstra from "../utils/Dijkstra.js";
 import {hasTextsUnderSpecificLength} from "../utils/array.js";
-import {extractTotalValuesOfObjects} from "../utils/object.js";
+import Paths from "../model/Paths.js";
 
 export function DijkstraNavigation(){
-    this.init=({departure, arrival})=>{
+    this.init=()=>{
         this.dijkStra=new Dijkstra();
-        this.departure=departure;
-        this.arrival=arrival;
+        this.paths=new Paths();
     };
 
-    this.setPaths=(Paths)=>{
-        this.Paths =Paths;
-        Paths.getPaths().map((path)=>this.dijkStra.addEdge(path.departure, path.arrival, path.weight));
+    this.setDeparture=(departure)=>{
+        this.departure=departure;
+    }
+
+    this.setArrival=(arrival)=>{
+        this.arrival=arrival;
+    }
+
+    this.setPaths=(paths)=>{
+        this.paths.setPaths(paths);
+        this.paths.getPaths().map((path)=>this.dijkStra.addEdge(path.departure, path.arrival, path.weight));
     }
 
     this.findShortestPath = ()=> {
@@ -36,13 +43,13 @@ export function DijkstraNavigation(){
     };
 
     const checkIsExistsDepartureStation = ()=>{
-        if(!getTotalStation().includes(this.departure)){
+        if(!this.paths.checkIsStationExistsInPaths(this.departure)){
             throw Error('존재하지 않는 출발역입니다.');
         }
     };
 
     const checkIsExistsArrivalStation = ()=>{
-        if(!getTotalStation().includes(this.arrival)){
+        if(!this.paths.checkIsStationExistsInPaths(this.arrival)){
             throw Error('존재하지 않는 도착역입니다.');
         }
     };
@@ -53,6 +60,5 @@ export function DijkstraNavigation(){
         }
     };
 
-    const getTotalStation = () => extractTotalValuesOfObjects(this.Paths.getPaths(), ["departure", "arrival"]);
     const IsSameString = (a,b) => a===b;
 }
