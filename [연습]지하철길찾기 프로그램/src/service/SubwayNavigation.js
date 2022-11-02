@@ -1,10 +1,10 @@
-import {createObject} from "../utils/object.js";
+import {constructObject} from "../utils/object.js";
 import Paths from "../model/Paths.js";
 
 export default function SubwayNavigation (){
     this.init=({paths, Algorithm})=>{
-        this.paths=createObject(Paths,paths);
-        this.Algorithm= createObject(Algorithm);
+        this.paths=constructObject(Paths,paths);
+        this.Algorithm= constructObject(Algorithm);
     };
 
     this.findShortestDistancePath = (departure, arrival) =>{

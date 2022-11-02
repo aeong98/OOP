@@ -1,11 +1,12 @@
 import Dijkstra from "../utils/Dijkstra.js";
 import {hasTextsUnderSpecificLength} from "../utils/array.js";
 import Paths from "../model/Paths.js";
+import {constructObject} from "../utils/object.js";
 
 export function DijkstraNavigation(){
     this.init=()=>{
-        this.dijkStra=new Dijkstra();
-        this.paths=new Paths();
+        this.dijkStra= constructObject(Dijkstra);
+        this.paths=constructObject(Paths);
     };
 
     this.setDeparture=(departure)=>{

@@ -7,7 +7,7 @@ import DepartureInput from "./components/DepartureInput.js";
 import SearchTypeRadioButton from "./components/SearchTypeRadioButton.js";
 import SearchSubmitButton from "./components/SearchSubmitButton.js";
 import SearchResult from "./components/SearchResult.js";
-import {createObject} from "./utils/object.js";
+import {constructObject} from "./utils/object.js";
 import {SHORTEST_DISTANCE, SHORTEST_TIME} from "./constants.js";
 
 export default function App({$target}){
@@ -77,7 +77,7 @@ export default function App({$target}){
     const findPath = () =>{
         const {$paths, $departure, $arrival, $searchType} = this.state;
 
-        const subwayNavigation = createObject(SubwayNavigation,{
+        const subwayNavigation = constructObject(SubwayNavigation,{
             paths: $paths,
             Algorithm: DijkstraNavigation,
         });
