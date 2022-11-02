@@ -28,7 +28,7 @@ export default function SubwayNavigation (){
     };
 
     const findPath = (departure, arrival, paths)=>{
-        this.Algorithm.setDeparture(departure);
+        this.Algorithm.setDeparture(departure);``
         this.Algorithm.setArrival(arrival);
         this.Algorithm.setPaths(paths);
         this.Algorithm.validate();
